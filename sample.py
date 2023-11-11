@@ -2,6 +2,9 @@ import pygame
 from pygame import FULLSCREEN, mixer
 import random
 import math
+from player import *
+from enemy import *
+
 
 pygame.init()
 
@@ -14,17 +17,7 @@ pygame.display.set_caption('inveaders game')
 #score
 score_value = 0
 
-#player
-playerimg = pygame.image.load('player.png')
-playerX,playerY= 370,500
-playerX_change = 0
-playerY_change = 0
 
-# Enemy
-enemyimg = pygame.image.load('enemy.png')
-enemyX = random.randint(0, 736)
-enemyY = random.randint(50, 150)
-enemyX_change, enemyY_change = 3, 10
 
 #bullet
 bulletimg = pygame.image.load('bullet.png')
@@ -34,16 +27,18 @@ bullet_state = 'ready'
 bullet_delay = 0
 bullet_delay_max = 15
 
+enemy_bullet_img = pygame.image.load('enemy_bullet.png')
+enemy_bulletX = 0
+enemy_bulletY = 0
+enemy_bulletX_change = 0
+enemy_bulletY_change = 2
+enemy_bullet_state = 'ready'
+
+
 #game_over
 game_over = False
 
 #mixer.Sound('laser.wav').play()
-
-def player(x,y):
-    screen.blit(playerimg,(x,y))
-
-def enemy(x,y):
-    screen.blit(enemyimg,(x,y))
 
 def fire_bullet(x,y):
     global bullet_state
@@ -63,6 +58,12 @@ def isPlayerCollision(playerX, playerY, enemyX, enemyY):
         return True
     else:
         return False
+    
+def fire_enemy_bullet(x, y):
+    global enemy_bullet_state
+    enemy_bullet_state = 'fire'
+    screen.blit(enemy_bullet_img, (x, y))
+
    
 
 
@@ -142,10 +143,29 @@ while running:
     if collision:
         bulletY = 480
         bullet_state = 'ready'
-        score_value += 1
+        score_value += 10
         enemyX = random.randint(0, 736)
         enemyY = random.randint(50, 150)
     enemy(enemyX, enemyY)
+
+    if enemy_bullet_state == 'ready':
+       if random.randint(0, 100) < 1:  
+        enemy_bulletX = enemyX 
+        enemy_bulletY = enemyY  
+        fire_enemy_bullet(enemy_bulletX, enemy_bulletY)
+
+    if enemy_bullet_state == 'fire':
+        enemy_bulletY += enemy_bulletY_change
+    screen.blit(enemy_bullet_img, (enemy_bulletX, enemy_bulletY))
+
+    collision_with_player = isPlayerCollision(playerX, playerY, enemy_bulletX, enemy_bulletY)
+    if collision_with_player:
+        game_over = True
+
+    if enemy_bulletY >= 650: 
+        enemy_bullet_state = 'ready'
+    
+
     
 
 # Bullet Movement
