@@ -22,7 +22,7 @@ score_value = 0
 #bullet
 bulletimg = pygame.image.load('bullet.png')
 bulletX,bulletY = 370,500
-bulletX_change,bulletY_change = 0,3
+bulletX_change,bulletY_change = 0,2
 bullet_state = 'ready'
 bullet_delay = 0
 bullet_delay_max = 15
@@ -31,9 +31,13 @@ enemy_bullet_img = pygame.image.load('enemy_bullet.png')
 enemy_bulletX = 0
 enemy_bulletY = 0
 enemy_bulletX_change = 0
-enemy_bulletY_change = 2
+enemy_bulletY_change = 0.8
 enemy_bullet_state = 'ready'
 
+player_life = 3
+invincible_time = 60
+
+invincible_timer = 0
 
 #game_over
 game_over = False
@@ -84,9 +88,9 @@ while running:
     # for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
-                playerX_change =0.5
+                playerX_change =0.45
             if event.key == pygame.K_RIGHT:
-                playerX_change = -0.5
+                playerX_change = -0.45
             if event.key == pygame.K_UP:
                playerY_change = -0.3
             if event.key == pygame.K_DOWN:
@@ -133,10 +137,10 @@ while running:
         enemyY_change
     enemyX += enemyX_change
     if enemyX <= 0: 
-        enemyX_change = 1
+        enemyX_change = 0.7
         enemyY += enemyY_change
     elif enemyX >=735: 
-        enemyX_change = -1
+        enemyX_change = -0.7
         enemyY += enemyY_change    
 
     collision = isCollision(enemyX, enemyY, bulletX, bulletY)
@@ -164,6 +168,13 @@ while running:
 
     if enemy_bulletY >= 650: 
         enemy_bullet_state = 'ready'
+
+    if invincible_timer > 0:
+        invincible_timer -= 1
+
+    
+    
+    
     
 
     
@@ -190,6 +201,30 @@ while running:
     collision_with_player = isPlayerCollision(playerX, playerY, enemyX, enemyY)
     if collision_with_player:
       game_over = True
+
+      if collision_with_player:  
+        player_life -= 1
+    if player_life == 0:
+        game_over = True
+
+
+    #collision_with_player = isPlayerCollision(playerX, playerY, enemy_bulletX, enemy_bulletY)
+    if collision_with_player and invincible_timer == 0:
+      player_life -= 1
+    if player_life == 0:
+        game_over = True
+    else:
+        invincible_timer = invincible_time
+
+    if invincible_timer == 0:
+        if collision_with_player:  
+              player_life -= 1
+        if player_life == 0:
+            game_over = True
+        else:
+            invincible_timer = invincible_time
+    
+    
 
     if game_over:
         font = pygame.font.SysFont(None, 100)

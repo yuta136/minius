@@ -10,7 +10,7 @@ def enemy(x,y):
     
 enemyX = random.randint(0, 736)
 enemyY = random.randint(50, 150)
-enemyX_change = 3
+enemyX_change = 0.7
 enemyY_change = 10
 
 
