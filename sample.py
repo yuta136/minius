@@ -34,16 +34,15 @@ enemy_bulletY_change = 0.8
 enemy_bullet_state = 'ready'
 
 #life
-player_life_value = 500
+player_life_value = 3
 
-#flag
-# hit  : 1
-# not hit : 0
-collision_flag = 0
+# 一度ライフを減らしたら 1
+# 一度もライフを減らしていなかったら 0
+player_life_enemy_flag = 0
+player_life_bullet_flag =0
 
-invincible_time = 60
-
-invincible_timer = 0
+#debug_mode
+debug_mode = False 
 
 #game_over
 game_over = False
@@ -63,19 +62,10 @@ def isCollision(enemyX, enemyY, bulletX, bulletY):
         return False
     
 def isPlayerCollision(playerX, playerY, enemyX, enemyY):
-    global collision_flag
     distance = math.sqrt(math.pow(playerX - enemyX, 2) + math.pow(playerY - enemyY, 2))
     if distance < 35:
-        if collision_flag == 0:
-            collision_flag = 1
             return True
-        
-        if collision_flag == 1:
-            return False
-
     else:
-        if collision_flag == 1:
-            collision_flag = 0
             return False
     
 def fire_enemy_bullet(x, y):
@@ -97,9 +87,6 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # if bullet_delay > 0:
-    #     bullet_delay -= 1
-
     # for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
@@ -118,6 +105,12 @@ while running:
                     fire_bullet(bulletX,bulletY)
                     bullet_state = 'fire'
                     bullet_delay = bullet_delay_max
+
+            if event.key == pygame.K_1:
+                if debug_mode == True: 
+                    debug_mode = False     
+                else:
+                    debug_mode = True
 
         
 
@@ -177,31 +170,40 @@ while running:
         enemy_bulletY += enemy_bulletY_change
     screen.blit(enemy_bullet_img, (enemy_bulletX, enemy_bulletY))
 
-    collision_with_player = isPlayerCollision(playerX, playerY, enemy_bulletX, enemy_bulletY)
-    if collision_with_player:
-        player_life_value -= 1
-        sys.stdout.write(f"\n life: {player_life_value}")
-        
-        
-        if player_life_value < 0:
-            game_over = True
-        
-
     if enemy_bulletY >= 650: 
         enemy_bullet_state = 'ready'
 
-    if invincible_timer > 0:
-        invincible_timer -= 1
+    # 敵のbulletとの接触
+    collision_with_player = isPlayerCollision(playerX, playerY, enemy_bulletX, enemy_bulletY)
+    if collision_with_player:
+        if player_life_bullet_flag == 0:
+            player_life_value -= 1
+            player_life_bullet_flag = 1
+    
+    if not collision_with_player:
+            player_life_bullet_flag = 0
+    
+    if player_life_value < 1:
+        game_over = True       
+
+    # 敵との接触
+    collision_with_player = isPlayerCollision(playerX, playerY, enemyX, enemyY)
+    if collision_with_player:
+        if player_life_enemy_flag == 0:
+            player_life_value -= 1
+            player_life_enemy_flag = 1
+    
+    if not collision_with_player:
+            player_life_enemy_flag = 0
+    
+    if player_life_value < 1:
+        game_over = True  
+        
+
 
     
-    
-    
-    
 
-    
-
-# Bullet Movement
-
+    # Bullet Movement
     if bulletY <=0:
         bulletY = 480
         bullet_state = 'ready'
@@ -218,40 +220,12 @@ while running:
     score =font.render(f'score : {str(score_value)}',True,(250,50,100))
     screen.blit(score,(10,15))
 
-    #player_life
-    player_life =font.render(f'life : {str(player_life_value)} flag : {str(collision_flag)}',True,(250,50,100))
-    screen.blit(player_life,(10,80))
+    #debug_mode
+    if debug_mode:
+        player_life =font.render(f'life : {str(player_life_value)} bullet_flag : {str(player_life_bullet_flag)} enemy_flag : {str(player_life_enemy_flag)}',True,(250,50,100))
+        screen.blit(player_life,(10,80))
 
     #game_over
-    collision_with_player = isPlayerCollision(playerX, playerY, enemyX, enemyY)
-    if collision_with_player:
-      #game_over = True
-
-    #   if collision_with_player:  
-        player_life -= 1
-        
-        if player_life == 0:
-            game_over = True
-
-
-    #collision_with_player = isPlayerCollision(playerX, playerY, enemy_bulletX, enemy_bulletY)
-    # if collision_with_player and invincible_timer == 0:
-    #   player_life -= 1
-    # if player_life == 0:
-    #     game_over = True
-    # else:
-    #     invincible_timer = invincible_time
-
-    # if invincible_timer == 0:
-    #     if collision_with_player:  
-    #           player_life -= 1
-    #     if player_life == 0:
-    #         game_over = True
-    #     else:
-    #         invincible_timer = invincible_time
-    
-    
-
     if game_over:
         font = pygame.font.SysFont(None, 100)
         game_over_text = font.render("Game Over ", True, (255, 0, 0))
